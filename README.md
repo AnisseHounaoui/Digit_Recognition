@@ -1,2 +1,2 @@
 # IA_project
-Handwritten digit recognition
+Handwritten digit recognition using features extraction (Local Line Fitting) 
