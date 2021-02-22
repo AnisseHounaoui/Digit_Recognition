@@ -68,7 +68,7 @@ class MyNN(nn.Module):
 	def __init__(self):
 		super(MyNN, self).__init__()
 		self.Layer1 = nn.Sequential(
-			nn.Linear(784, 64),
+			nn.Linear(28*28, 64),
 			nn.ReLU(),
 			nn.Linear(64, 32),
 			nn.ReLU())
@@ -97,7 +97,7 @@ def TrainModel(model, optim_fct, loss_fct, data_input, label):
 	return loss.item()
 
 
-iterations = 10
+iterations = 5
 
 for epoch in range(iterations):
 
@@ -114,7 +114,7 @@ for epoch in range(iterations):
 		train_loss /= len(train_loader)
 
 	network.eval()
-
+	print("epoch" + str(epoch+1))
 	# testing
 	with torch.no_grad():  # Gradient computation is not involved in inference
 		test_loss = 0
@@ -131,11 +131,10 @@ for epoch in range(iterations):
 	print('SGD: Loss = {:.6f} , Acc = {:.4f}'.format(train_loss, float(correct) * 100 / float(total)))
 
 
-
 cv2.namedWindow('window')
 cv2.setMouseCallback('window', draw)
 
-win = np.zeros((250,250,3), dtype='float64')
+win = np.zeros((250,250,3), dtype='float32')
 while True:
 
 	cv2.imshow('window', win)
@@ -143,7 +142,7 @@ while True:
 	k = cv2.waitKey(1)
 
 	if k == ord('c'):
-		win = np.zeros((500,500,3), dtype='float64')
+		win = np.zeros((250,250,3), dtype='float32')
 
 	if k == ord('q'):
 		cv2.destroyAllWindows()
@@ -186,13 +185,26 @@ while True:
 				else:
 					thresh = imutils.resize(thresh, height=32)
 		out = cv2.resize(thresh,(28,28))
-		print(out.shape) # 28x28
+		cv2.imwrite("./images/feature.jpg", out)
+
+		print(out.shape)# 28x28
 		'''cv2.imshow("image", output_final)
 		key = cv2.waitKey(0)
 		cv2.imwrite("./images/cropped.jpg",roi)'''
+		out = out.astype("float32")
 		tens = torch.tensor(out)
-		feature = torch.flatten(tens, start_dim=1) # 784x1
-		#prediction = network(feature)
 
-		print(feature.shape)
-		cv2.imwrite("./images/feature.jpg",out)
+		tens = tens.view(-1, 28*28) #.to(device)
+		tens = tens / 255.0
+		#print(tens)
+		#print(tens.size())
+		print(tens)
+		output = network(tens)
+		_,pred = torch.max(output.data, 1)
+		print(output)
+		print(pred)
+
+
+
+#train_data[0][0].view(-1, 28 * 28)
+#print(train_data[0][0].size())
